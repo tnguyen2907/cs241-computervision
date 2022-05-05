@@ -22,3 +22,5 @@ Input type:
 
 Người đằng trước phải biến output của mình thành dạng input của người đằng sau
 Người đằng sau nhớ ghi dạng input của mình
+
+Dũng đã ở đây là nhận công việc
