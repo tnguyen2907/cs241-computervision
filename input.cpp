@@ -43,11 +43,11 @@ int main()
     //imshow("Left Image", left_img);       // Show image
     //waitKey(0);
     Mat right_img = imread(right_img_path);
-  /*  imshow("Right Image", right_img);
-    waitKey(0);*/
+    /*  imshow("Right Image", right_img);
+      waitKey(0);*/
 
-    //cout << "R (numpy)   = " << endl << format(left_img, Formatter::FMT_NUMPY) << endl << endl;   //Print whole array (very big)
-    //cout << left_img.at<Vec3b>(100, 200) << endl;     //Print a pixel
+      //cout << "R (numpy)   = " << endl << format(left_img, Formatter::FMT_NUMPY) << endl << endl;   //Print whole array (very big)
+      //cout << left_img.at<Vec3b>(100, 200) << endl;     //Print a pixel
     return 0;
 }
 
