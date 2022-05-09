@@ -16,7 +16,7 @@ Use formula calculate depth and coordinates: Dũng và Đạt
 
 Print out stereo images: Trung
 
-Input type:
+Input type: 2d int array of size height * width. Every element in this array is the depth of the pixel at that position.
 
 
 
