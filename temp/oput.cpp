@@ -14,7 +14,6 @@
 #include <string>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
-#include "main.h"
 
 using namespace std;
 using namespace cv;
@@ -45,7 +44,38 @@ Vec3b depth_to_color(int depth) {       //Map depth to a color in my custom spec
     return Vec3b(get_blue(depth), get_green(depth), get_red(depth));
 }
 
-void print_depth_map(int** depth_map){
+int main()
+{
+    string calib_path = "D:/Download/Project images/calib.txt"; //Path to calibration file
+    ifstream calib_file(calib_path);
+
+    int width = 0;
+    int height = 0;
+    int baseline = 0;
+
+    string temp;
+    while (getline(calib_file, temp)) {  // geting baseline, width, height
+        //cout << temp << endl;
+        if (temp.find("baseline=") != -1) baseline = stoi(temp.substr(9));
+        else if (temp.find("width=") != -1) width = stoi(temp.substr(6));
+        else if (temp.find("height=") != -1) height = stoi(temp.substr(7));
+    }
+    calib_file.close();
+
+    cout << "Baseline: " << baseline << endl;
+    cout << "Height: " << height << endl;
+    cout << "Width: " << width << endl;
+
+    int** depth_map = (int**)malloc(height * sizeof(int*));     //Test depth_map
+    int* temp_ptr;
+    for (int i = 0; i < height; i++) {
+        temp_ptr = (int*)malloc(width * sizeof(int));
+        depth_map[i] = temp_ptr;
+        for (int j = 0; j < width; j++) {
+            temp_ptr[j] = j % 1024;
+        }
+    }
+
 
     Mat depth_map_img(height, width, CV_8UC3, Vec3b(0, 0, 0));  //Transform depth_map into a image with color representing depth
     for (int i = 0; i < depth_map_img.rows; i++) {
@@ -54,9 +84,13 @@ void print_depth_map(int** depth_map){
         }
     }
 
+    for (int i = 0; i < height; i++) free(depth_map[i]);        //Free dynamic allocation
+    free(depth_map);
+
     imshow("Depth map", depth_map_img);                         //Show depth map image
     waitKey(0);
 
+    return 0;
 }
 
 

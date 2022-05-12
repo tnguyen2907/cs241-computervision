@@ -6,7 +6,7 @@
 using namespace std;
 using namespace cv;
 
-Vec2b *match_key_pts(Vec2b *left_key_pts, Vec2b *right_key_pts, Mat left_img, Mat right_img) {		//malloc
+Vec2b* get_key_pts(Mat img) {		//malloc
 	return NULL;
 }
 
