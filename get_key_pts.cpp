@@ -12,7 +12,6 @@
 #include <opencv2\core\core.hpp>
 #include <opencv2\highgui.hpp>
 #include <opencv2/features2d.hpp>
-#define kernel_size 16
 
 using namespace cv;
 using namespace std;
@@ -314,7 +313,7 @@ bool compareKey(KeyPoint k1, KeyPoint k2) {
 vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     vector<KeyPoint> unique_key;
     if (keypoints.size() <= 2) return keypoints;
-    sort(keypoints.begin, keypoints.end(), compareKey);
+    sort(keypoints.begin(), keypoints.end(), compareKey);
     unique_key.push_back(keypoints[0]);
     for (KeyPoint key: keypoints) {
         if (unique_key.back().pt.x != key.pt.x || unique_key.back().pt.y != key.pt.y || unique_key.back().angle != key.angle) unique_key.push_back(key);
@@ -346,7 +345,7 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
                         vector<float> orientations = orientation(current.pt, octave, layer*1.5, scale_space[octave][current.size]);
                         for (float angle: orientations)
                         {                          
-                            KeyPoint tmp(current.pt, current.size*20, angle, 0, octave);
+                            KeyPoint tmp(current.pt, current.size, angle, 0, octave);
                             // cout << "x: " << tmp.pt.x << ", y: " << tmp.pt.y << " with size " << tmp.size << ", angle of " << tmp.angle << " at octave " << tmp.octave << endl;
                             list.push_back(tmp);
                         }
@@ -360,29 +359,28 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
 }
 
 vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
-    Mat kernel = gaussian_kernel(kernel_size/6.0);
-    int pad = kernel_size/2;
+    Mat kernel = gaussian_kernel(16/6.0);
+    int pad = 8;
     vector<Mat> feature;
     Mat feature_vec = Mat::zeros(128, 1, CV_64FC1);
     for (KeyPoint p : key) {
         Mat current = scale_space[p.octave][p.size];
-        
         int x = (int) p.pt.x / pow(2, p.octave);
         int y = (int) p.pt.y / pow(2, p.octave);
 
-        Mat magnitude = Mat::zeros(Size(17, 17), CV_64FC1);
-        Mat orien = Mat::zeros(Size(17, 17), CV_64FC1);
+        Mat magnitude = Mat::zeros(17, 17, CV_64FC1);
+        Mat orien = Mat::zeros(17, 17, CV_64FC1);
 
-        if (x < pad || y < pad) continue;
-        if (x + pad >= current.size().height || y + pad >= current.size().width) continue;
+        if (x <= pad || y <= pad) continue;
+        if (x + pad >= current.cols - 1 || y + pad >= current.rows - 1) continue;
         for (int i = -pad; i <= pad; i++) {
             int iloc = y + i;
-            for (int j = -pad; j <= pad; i++) {
+            for (int j = -pad; j <= pad; j++) {
                 int jloc = x + j;
                 double dx = current.at<float>(jloc, iloc + 1) - current.at<float>(jloc, iloc - 1);
                 double dy = current.at<float>(jloc + 1, iloc) - current.at<float>(jloc - 1, iloc);
                 magnitude.at<double>(i + pad, j + pad) = sqrt(dx * dx + dy * dy);
-                double theta = atan2(dy, dx)  * (180.0 / M_PI);
+                double theta = atan2(dy, dx) * (180.0 / M_PI);
                 if (theta < 0) theta += 360;
                 orien.at<double>(i + pad, j + pad) = theta;
             }
@@ -393,13 +391,13 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
             int m = 0;
             for (int j = 0; j <= 13; j = j+4)
             {
-                Mat tmp = orien(Range(i, 4), Range(j, 4)).clone();
+                Mat tmp = orien(Rect(i, j, 4, 4));
                 for (int a = 0; a < tmp.rows; a++)
                 {
                     for (int b = 0; b < tmp.cols; b++)
                     {
-                        int value = floor(tmp.at<double>(a, b)/45.0);
-                        feature_vec.at<double>(m + value) += 1;
+                        int value = floor(tmp.at<float>(a, b)/45.0);
+                        feature_vec.at<float>(m + value) += 1.0;
                     }
                 }
                 m += 8;
@@ -407,7 +405,6 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
             }
             if (i == 4) i += 1;
         }
-
         feature_vec = feature_vec / max(1e-6, norm(feature_vec, NORM_L2));
         threshold(feature_vec, feature_vec, 0.2, 255,THRESH_TRUNC);
         feature_vec = feature_vec / max(1e-6, norm(feature_vec, NORM_L2));
@@ -416,17 +413,24 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
     return feature;
 }
 
+tuple<vector<KeyPoint>, Mat> get_key_pts(Mat img) {
+    Mat ret, output;
+    cvtColor(img, ret, COLOR_BGR2GRAY);
+    ret.convertTo(ret, CV_32FC1);
+    GaussianBlur(ret, ret, Size(0, 0), 0.5, 0.5);
+	resize(ret, ret, Size(0, 0), 2, 2, INTER_LINEAR);
+	tuple<vector<vector<Mat>>, vector<vector<Mat>>> Scale_DoG = dog(ret, 1.6);
+	vector<KeyPoint> keypoints = get_keypoint(get<0>(Scale_DoG), get<1>(Scale_DoG));
+    Ptr<DescriptorExtractor> extractor = SIFT::create();
+    extractor->compute(img, keypoints, output);
+    return make_tuple(keypoints, output);
+}
+
 int main(int argc, char **argv)
 {
     Mat org_image, output, base_img;
-    org_image = imread("left.bmp", 0);
-	org_image.convertTo(base_img, CV_32FC1);
-    GaussianBlur(base_img, base_img, Size(0, 0), 0.5, 0.5);
-	resize(base_img, base_img, Size(0, 0), 2, 2, INTER_LINEAR);
-	tuple<vector<vector<Mat>>, vector<vector<Mat>>> Scale_DoG = dog(base_img, 1.6);
-	vector<KeyPoint> keypoints = get_keypoint(get<0>(Scale_DoG), get<1>(Scale_DoG));
-    drawKeypoints(org_image, keypoints, output, Scalar::all(-1), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-    imshow("current", output);
-    waitKey(0);
+    org_image = imread("eiffel.jpg");
+	tuple<vector<KeyPoint>, Mat> descriptor = get_key_pts(org_image);
+    // for (Mat m: get<1>(descriptor)) cout << m << endl;
     return 0;
 }
