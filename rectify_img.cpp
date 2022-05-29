@@ -17,21 +17,21 @@ using namespace cv;
 using namespace std;
 
 Vec3f create_line_right(Mat &fund, Point &point) {
-    float a = (((int) point[0]) * fund.at<float>(0, 0)) + (((int) point[1]) * fund.at<float>(1, 0)) + fund.at<float>(2, 0);
-    float b = (((int) point[0]) * fund.at<float>(0, 1)) + (((int) point[1]) * fund.at<float>(1, 1)) + fund.at<float>(2, 1);
-    float c = (((int) point[0]) * fund.at<float>(0, 2)) + (((int) point[1]) * fund.at<float>(1, 2)) + fund.at<float>(2, 2);
+    float a = (((int) point.x) * fund.at<float>(0, 0)) + (((int) point.y) * fund.at<float>(1, 0)) + fund.at<float>(2, 0);
+    float b = (((int) point.x) * fund.at<float>(0, 1)) + (((int) point.y) * fund.at<float>(1, 1)) + fund.at<float>(2, 1);
+    float c = (((int) point.x) * fund.at<float>(0, 2)) + (((int) point.y) * fund.at<float>(1, 2)) + fund.at<float>(2, 2);
     return Vec3f(a, b, c);
 }
 
 Vec3f create_line_left(Mat &fund, Point &point){
-    float a = (((int) point[0]) * fund.at<float>(0, 0)) + (((int) point[1]) * fund.at<float>(0, 1)) + fund.at<float>(0, 2);
-    float b = (((int) point[0]) * fund.at<float>(1, 0)) + (((int) point[1]) * fund.at<float>(1, 1)) + fund.at<float>(1, 2);
-    float c = (((int) point[0]) * fund.at<float>(2, 0)) + (((int) point[1]) * fund.at<float>(2, 1)) + fund.at<float>(2, 2);
+    float a = (((int) point.x) * fund.at<float>(0, 0)) + (((int) point.y) * fund.at<float>(0, 1)) + fund.at<float>(0, 2);
+    float b = (((int) point.x) * fund.at<float>(1, 0)) + (((int) point.y) * fund.at<float>(1, 1)) + fund.at<float>(1, 2);
+    float c = (((int) point.x) * fund.at<float>(2, 0)) + (((int) point.y) * fund.at<float>(2, 1)) + fund.at<float>(2, 2);
     return Vec3f(a, b, c);
 }
 
 float find_theta(Point &center, Point &spin){
-    return atan2f(((int) spin[1]) - ((int) center[1]), ((int) spin[0]) - ((int) center[0]))
+    return atan2f(((int) spin.y) - ((int) center.y), ((int) spin.x) - ((int) center.x))
 }
 
 Mat rot_mat(float theta){
