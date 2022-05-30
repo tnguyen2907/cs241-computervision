@@ -319,7 +319,7 @@ vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     sort(keypoints.begin(), keypoints.end(), compareKey);
     unique_key.push_back(keypoints[0]);
     for (KeyPoint key : keypoints) {
-        if (unique_key.back().pt.x != key.pt.x || unique_key.back().pt.y != key.pt.y || unique_key.back().angle != key.angle) unique_key.push_back(key);
+        if (unique_key.back().pt.x != key.pt.x || unique_key.back().pt.y != key.pt.y) unique_key.push_back(key);
     }
     keypoints.clear();
     return unique_key;
@@ -441,9 +441,10 @@ tuple<vector<KeyPoint>, vector<Mat>> get_key_pts(Mat img) {
     Mat output;
     cvtColor(img, output, COLOR_BGR2GRAY);
     Ptr<SiftFeatureDetector> detector = SiftFeatureDetector::create();
-    vector<KeyPoint> keypoints;
+    vector<KeyPoint> key_before;
     Mat des;
-    detector->detect(output, keypoints);
+    detector->detect(output, key_before);
+    vector<KeyPoint> keypoints = unique(key_before);
     detector->compute(output, keypoints, des);
     vector<Mat> descriptors;
     for (int i = 0; i < des.rows; i++)
