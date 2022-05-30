@@ -31,7 +31,7 @@ Vec3f create_line_left(Mat &fund, Point &point){
 }
 
 float find_theta(Point &center, Point &spin){
-    return atan2f(((int) spin.y) - ((int) center.y), ((int) spin.x) - ((int) center.x))
+    return atan2f(((int) spin.y) - ((int) center.y), ((int) spin.x) - ((int) center.x));
 }
 
 Mat rot_mat(float theta){
