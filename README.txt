@@ -27,3 +27,5 @@ Dũng đã ở đây là nhận công việc
 Đm ae t xong rồi nhá
 \
 https://docs.google.com/document/d/1BRb3IxyIHWtJ8SQ1qp8vmqiLGHNJOX3bftux6dBil5c/edit?usp=sharing
+
+http://www.cs.cmu.edu/~16385/s17/Slides/12.4_8Point_Algorithm.pdf
