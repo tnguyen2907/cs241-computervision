@@ -17,16 +17,16 @@ using namespace cv;
 using namespace std;
 
 Vec3f create_line_right(Mat &fund, Point &point) {
-    float a = (((int) point.x) * fund.at<float>(0, 0)) + (((int) point.y) * fund.at<float>(1, 0)) + fund.at<float>(2, 0);
-    float b = (((int) point.x) * fund.at<float>(0, 1)) + (((int) point.y) * fund.at<float>(1, 1)) + fund.at<float>(2, 1);
-    float c = (((int) point.x) * fund.at<float>(0, 2)) + (((int) point.y) * fund.at<float>(1, 2)) + fund.at<float>(2, 2);
+    float a = (((int) point.x) * fund.at<double>(0, 0)) + (((int) point.y) * fund.at<double>(1, 0)) + fund.at<double>(2, 0);
+    float b = (((int) point.x) * fund.at<double>(0, 1)) + (((int) point.y) * fund.at<double>(1, 1)) + fund.at<double>(2, 1);
+    float c = (((int) point.x) * fund.at<double>(0, 2)) + (((int) point.y) * fund.at<double>(1, 2)) + fund.at<double>(2, 2);
     return Vec3f(a, b, c);
 }
 
 Vec3f create_line_left(Mat &fund, Point &point){
-    float a = (((int) point.x) * fund.at<float>(0, 0)) + (((int) point.y) * fund.at<float>(0, 1)) + fund.at<float>(0, 2);
-    float b = (((int) point.x) * fund.at<float>(1, 0)) + (((int) point.y) * fund.at<float>(1, 1)) + fund.at<float>(1, 2);
-    float c = (((int) point.x) * fund.at<float>(2, 0)) + (((int) point.y) * fund.at<float>(2, 1)) + fund.at<float>(2, 2);
+    float a = (((int) point.x) * fund.at<double>(0, 0)) + (((int) point.y) * fund.at<double>(0, 1)) + fund.at<double>(0, 2);
+    float b = (((int) point.x) * fund.at<double>(1, 0)) + (((int) point.y) * fund.at<double>(1, 1)) + fund.at<double>(1, 2);
+    float c = (((int) point.x) * fund.at<double>(2, 0)) + (((int) point.y) * fund.at<double>(2, 1)) + fund.at<double>(2, 2);
     return Vec3f(a, b, c);
 }
 
@@ -66,6 +66,7 @@ tuple<Mat, Mat> rectify(Mat &img1, Mat &img2, Mat &fund){
     if (lp3_x > lp2_x) left_rot = rot_mat(find_theta(lpoint2, lpoint3));
     else left_rot = rot_mat(find_theta(lpoint3, lpoint2));
 
+
     Mat new_img1(img1.rows, img1.cols, CV_8UC3, Vec3b(0, 0, 0));
     for (int i = 0; i < img1.rows; i++){
         for (int j = 0; j < img1.cols; j++){
@@ -96,7 +97,14 @@ int main(int argc, char **argv)
 {
     Mat image_left = imread("left.bmp");
     Mat image_right = imread("right.bmp");
-    Mat fund = (Mat_<float>(3, 3) << -.003, -.028, 13.19, -.003, -.008, -29.2, 2.97, 50, -9999);
+    // Point key1[9] = {Point(0, 0) , Point(1, 6), Point(8, 4), 
+    //                 Point(6, 27), Point(13, 9), Point(5, 2), 
+    //                 Point(72, 86), Point(5, 94), Point(56, 23)};
+    // Point key2[9] = {Point(10, 0) , Point(2, 4), Point(17, 3), 
+    //                 Point(16, 25), Point(12, 37), Point(3, 8), 
+    //                 Point(46, 81), Point(7, 100), Point(43, 19)};
+    // Mat fund = fundamental(lhs_mat(key1, key2));
+    cout << fund.size() << endl;
     tuple<Mat, Mat> ret = rectify(image_left, image_right, fund);
     imshow("left", get<0>(ret));
     waitKey(0);
