@@ -318,6 +318,7 @@ vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     for (KeyPoint key: keypoints) {
         if (unique_key.back().pt.x != key.pt.x || unique_key.back().pt.y != key.pt.y || unique_key.back().angle != key.angle) unique_key.push_back(key);
     }
+    keypoints.clear();
     return unique_key;
 }
 
@@ -349,6 +350,7 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
                             // cout << "x: " << tmp.pt.x << ", y: " << tmp.pt.y << " with size " << tmp.size << ", angle of " << tmp.angle << " at octave " << tmp.octave << endl;
                             list.push_back(tmp);
                         }
+                        orientations.clear();
                     }
                 }
             }
@@ -413,24 +415,59 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
     return feature;
 }
 
-tuple<vector<KeyPoint>, Mat> get_key_pts(Mat img) {
-    Mat ret, output;
-    cvtColor(img, ret, COLOR_BGR2GRAY);
-    ret.convertTo(ret, CV_32FC1);
-    GaussianBlur(ret, ret, Size(0, 0), 0.5, 0.5);
-	resize(ret, ret, Size(0, 0), 2, 2, INTER_LINEAR);
-	tuple<vector<vector<Mat>>, vector<vector<Mat>>> Scale_DoG = dog(ret, 1.6);
-	vector<KeyPoint> keypoints = get_keypoint(get<0>(Scale_DoG), get<1>(Scale_DoG));
-    Ptr<DescriptorExtractor> extractor = SIFT::create();
-    extractor->compute(img, keypoints, output);
-    return make_tuple(keypoints, output);
+// tuple<vector<KeyPoint>, Mat> get_key_pts(Mat img) {
+//     Mat ret, tmp;
+//     Mat output;
+//     cvtColor(img, tmp, COLOR_BGR2GRAY);
+//     tmp.convertTo(ret, CV_32FC1);
+//     GaussianBlur(ret, ret, Size(0, 0), 0.5, 0.5);
+// 	resize(ret, ret, Size(0, 0), 2, 2, INTER_LINEAR);
+// 	tuple<vector<vector<Mat>>, vector<vector<Mat>>> Scale_DoG = dog(ret, 1.6);
+// 	vector<KeyPoint> keypoints = get_keypoint(get<0>(Scale_DoG), get<1>(Scale_DoG));
+//     get<0>(Scale_DoG).clear();
+//     get<1>(Scale_DoG).clear();
+//     Ptr<SiftFeatureDetector> detector = SiftFeatureDetector::create();
+//     detector->compute(tmp, keypoints, output);
+//     cout << output.size() << endl;
+//     imshow("descriptor", output);
+//     waitKey(0);
+//     return make_tuple(keypoints, output);
+// }
+
+tuple<vector<KeyPoint>, vector<Mat>> get_key_pts(Mat img) {
+    Mat output;
+    cvtColor(img, output, COLOR_BGR2GRAY);
+    Ptr<SiftFeatureDetector> detector = SiftFeatureDetector::create();
+    vector<KeyPoint> keypoints;
+    Mat des;
+    detector->detect(output, keypoints);
+    detector->compute(output, keypoints, des);
+    vector<Mat> descriptors;
+    for (int i = 0; i < des.rows; i++)
+        descriptors.push_back(des.row(i));
+    return make_tuple(keypoints, descriptors);
 }
 
 int main(int argc, char **argv)
 {
-    Mat org_image, output, base_img;
-    org_image = imread("eiffel.jpg");
-	tuple<vector<KeyPoint>, Mat> descriptor = get_key_pts(org_image);
+    Mat image_left, image_right;
+    image_left = imread("left.bmp");
+    image_right = imread("right.bmp");
+    tuple<vector<KeyPoint>, vector<Mat>> descriptor_left = get_key_pts(image_left);
+    tuple<vector<KeyPoint>, vector<Mat>> descriptor_right = get_key_pts(image_right);
+    
+    // BFMatcher matcher(NORM_L2);
+    // std::vector<DMatch> matches;
+    // matcher.match(get<1>(descriptor_left), get<1>(descriptor_right), matches);
+    // Mat img_matches;
+    // drawMatches(image_left, get<0>(descriptor_left), image_right, get<0>(descriptor_right),
+    //            matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+    //            vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+    // imshow( "Good Matches", img_matches );
+
+    // waitKey(0);
+    // return 0;
     // for (Mat m: get<1>(descriptor)) cout << m << endl;
     return 0;
 }
