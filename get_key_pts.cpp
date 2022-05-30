@@ -24,7 +24,7 @@ typedef struct {
 } keypoint;
 
 // gamma correction for image before gaussian blur
-void gamma_correction(Mat &org, Mat &ret, float gamma) { 
+void gamma_correction(Mat org, Mat ret, float gamma) {
     int org_height = org.size().height;
     int org_width = org.size().width;
     unsigned char lut[256];
@@ -42,7 +42,7 @@ void gamma_correction(Mat &org, Mat &ret, float gamma) {
 }
 
 // add padding around the image
-void addPadding(Mat &org, Mat &ret, int padding) {
+void addPadding(Mat org, Mat ret, int padding) {
     int org_height = org.size().height;
     int org_width = org.size().width;
     if (padding > org_height || padding > org_width) return;
@@ -51,34 +51,36 @@ void addPadding(Mat &org, Mat &ret, int padding) {
     ret = Mat(height, width, CV_8UC1, Scalar(0, 0, 0));
     for (int i = 0; i < padding; i++) {
         for (int j = 0; j < padding; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(padding-j, padding-i);
+            ret.at<uchar>(j, i) = org.at<uchar>(padding - j, padding - i);
         }
         for (int j = padding; j < org_height + padding; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(j-padding, padding-i);
+            ret.at<uchar>(j, i) = org.at<uchar>(j - padding, padding - i);
         }
         for (int j = org_height + padding; j < height; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(j-2*padding, padding-i);
+            ret.at<uchar>(j, i) = org.at<uchar>(j - 2 * padding, padding - i);
         }
     }
     for (int i = org_width + padding; i < width; i++) {
         for (int j = 0; j < padding; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(padding-j, i-2*padding);
+            ret.at<uchar>(j, i) = org.at<uchar>(padding - j, i - 2 * padding);
         }
         for (int j = padding; j < org_height + padding; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(j-padding, i-2*padding);
+            ret.at<uchar>(j, i) = org.at<uchar>(j - padding, i - 2 * padding);
         }
         for (int j = org_height + padding; j < height; j++) {
-            ret.at<uchar>(j, i) = org.at<uchar>(j-2*padding, i-2*padding);
+            ret.at<uchar>(j, i) = org.at<uchar>(j - 2 * padding, i - 2 * padding);
         }
     }
     for (int i = padding; i < org_width + padding; i++) {
         for (int j = 0; j < height; j++) {
             if (j < padding) {
-                ret.at<uchar>(j, i) = org.at<uchar>(padding-j, i-padding);
-            } else if (j < org_height + padding) {
-                ret.at<uchar>(j, i) = org.at<uchar>(j-padding, i-padding);
-            } else {
-                ret.at<uchar>(j, i) = org.at<uchar>(j-2*padding, i-padding);
+                ret.at<uchar>(j, i) = org.at<uchar>(padding - j, i - padding);
+            }
+            else if (j < org_height + padding) {
+                ret.at<uchar>(j, i) = org.at<uchar>(j - padding, i - padding);
+            }
+            else {
+                ret.at<uchar>(j, i) = org.at<uchar>(j - 2 * padding, i - padding);
             }
         }
     }
@@ -100,17 +102,17 @@ vector<double> octave_sigmas(double sigma) {
 }
 
 // resize the image to half
-void halfimg(Mat &org, Mat &ret){
+void halfimg(Mat org, Mat ret) {
     int org_width = org.size().width;
     int org_height = org.size().height;
     int width = org_width / 2;
     int height = org_height / 2;
     ret = Mat::zeros(height, width, CV_32FC1);
     int new_width = 0;
-    for (int i = 0; i < org_width-1; i += 2)
+    for (int i = 0; i < org_width - 1; i += 2)
     {
         int new_height = 0;
-        for (int j = 0; j < org_height-1; j += 2)
+        for (int j = 0; j < org_height - 1; j += 2)
         {
             ret.at<float>(new_height, new_width) = org.at<float>(j, i);
             new_height++;
@@ -119,26 +121,26 @@ void halfimg(Mat &org, Mat &ret){
     }
 }
 
-void doubleimg(Mat &org, Mat &ret) {
+void doubleimg(Mat org, Mat ret) {
     int org_width = org.size().width;
     int org_height = org.size().height;
     int width = org_width * 2;
     int height = org_height * 2;
     ret = Mat::zeros(height, width, CV_32FC1);
     int new_width = 0;
-    for (int i = 0; i < org_width-1; i++)
+    for (int i = 0; i < org_width - 1; i++)
     {
-        for (int j = 0; j < org_height-1; j++)
+        for (int j = 0; j < org_height - 1; j++)
         {
-            ret.at<float>(2*j, 2*i) = org.at<float>(j, i);
-            ret.at<float>(2*j+1, 2*i) = org.at<float>(j, i);
-            ret.at<float>(2*j, 2*i+1) = org.at<float>(j, i);
-            ret.at<float>(2*j+1, 2*i+1) = org.at<float>(j, i);
+            ret.at<float>(2 * j, 2 * i) = org.at<float>(j, i);
+            ret.at<float>(2 * j + 1, 2 * i) = org.at<float>(j, i);
+            ret.at<float>(2 * j, 2 * i + 1) = org.at<float>(j, i);
+            ret.at<float>(2 * j + 1, 2 * i + 1) = org.at<float>(j, i);
         }
     }
 }
 
-Mat compute_gradient(Mat &mid, Mat &next, Mat &prev) {
+Mat compute_gradient(Mat mid, Mat next, Mat prev) {
     double dx = 0.5 * (mid.at<float>(1, 2) - mid.at<float>(1, 0));
     double dy = 0.5 * (mid.at<float>(2, 1) - mid.at<float>(0, 1));
     double dsigma = 0.5 * (next.at<float>(1, 1) - prev.at<float>(1, 1));
@@ -146,7 +148,7 @@ Mat compute_gradient(Mat &mid, Mat &next, Mat &prev) {
     return gradient;
 }
 
-Mat compute_hessian(Mat &mid, Mat &next, Mat &prev) {
+Mat compute_hessian(Mat mid, Mat next, Mat prev) {
     double dxx, dyy, dzz, dxy, dxz, dyz;
     dxx = mid.at<float>(1, 2) - 2 * mid.at<float>(1, 1) + mid.at<float>(1, 0);
     dyy = mid.at<float>(2, 1) - 2 * mid.at<float>(1, 1) + mid.at<float>(0, 1);
@@ -165,7 +167,7 @@ Mat gaussian_kernel(double sigma) {
     {
         for (int j = -r; j <= r; j++)
         {
-            kernel.at<double>(i + r, j + r) = exp(-(i*i + j*j) / (2.0 * sigma*sigma));
+            kernel.at<double>(i + r, j + r) = exp(-(i * i + j * j) / (2.0 * sigma * sigma));
         }
     }
     kernel = kernel / sum(kernel);
@@ -185,10 +187,10 @@ tuple<vector<vector<Mat>>, vector<vector<Mat>>> dog(Mat org, double sigma) {
     GaussianBlur(org, scale_space[0][0], Size(0, 0), sigmas[0], sigmas[0]);
     for (int octave = 0; octave < waves; octave++) {
         for (int layer = 1; layer < 6; layer++) {
-            GaussianBlur(scale_space[octave][layer-1], scale_space[octave][layer], Size(0, 0), sigmas[layer], sigmas[layer]);
-            dog[octave][layer-1] = scale_space[octave][layer] - scale_space[octave][layer-1];
-            if (octave == waves-1) continue;
-            halfimg(scale_space[octave][0], scale_space[octave+1][0]);
+            GaussianBlur(scale_space[octave][layer - 1], scale_space[octave][layer], Size(0, 0), sigmas[layer], sigmas[layer]);
+            dog[octave][layer - 1] = scale_space[octave][layer] - scale_space[octave][layer - 1];
+            if (octave == waves - 1) continue;
+            halfimg(scale_space[octave][0], scale_space[octave + 1][0]);
         }
     }
     return make_tuple(scale_space, dog);
@@ -209,7 +211,7 @@ bool extrema(Mat mid, Mat prevMat, Mat nextMat) {
     if ((maxLoc.x == 1 && maxLoc.y == 1) && (max < maxPrev || max < maxNext)) return false;
     return true;
 }
- 
+
 keypoint localize(int i, int j, vector<Mat> octave, int layer, int index) {
     keypoint ret;
     ret.pt = Point2f(-1, -1);
@@ -217,35 +219,35 @@ keypoint localize(int i, int j, vector<Mat> octave, int layer, int index) {
     int change = 1;
     for (int c = 0; c < 5; c++) {
         Mat mid = octave[layer].clone();
-        Mat nextMat = octave[layer+1].clone();
-        Mat prevMat = octave[layer-1].clone();
+        Mat nextMat = octave[layer + 1].clone();
+        Mat prevMat = octave[layer - 1].clone();
         if (change) {
             normalize(mid, mid, 0, 1, NORM_MINMAX);
             normalize(nextMat, nextMat, 0, 1, NORM_MINMAX);
             normalize(prevMat, prevMat, 0, 1, NORM_MINMAX);
             change = 0;
         }
-        
+
         Mat grad = compute_gradient(mid(Rect(j - 1, i - 1, 3, 3)), nextMat(Rect(j - 1, i - 1, 3, 3)), prevMat(Rect(j - 1, i - 1, 3, 3)));
-        
+
         Mat hessian = compute_hessian(mid(Rect(j - 1, i - 1, 3, 3)), nextMat(Rect(j - 1, i - 1, 3, 3)), prevMat(Rect(j - 1, i - 1, 3, 3)));
-        
+
         Mat extreme_loc;
         solve(hessian, grad, extreme_loc);
         if (abs(extreme_loc.at<float>(0)) < 0.5 && abs(extreme_loc.at<float>(1)) < 0.5 && abs(extreme_loc.at<float>(2)) < 0.5) {
             if (mid.at<float>(i, j) < 0.03) return ret;
             double trH = hessian.at<float>(0, 0) + hessian.at<float>(1, 1);
-            double detH = hessian.at<float>(0, 0)*hessian.at<float>(1, 1) - hessian.at<float>(0, 1) * hessian.at<float>(1, 0);
-            double ratio = trH*trH/detH;
+            double detH = hessian.at<float>(0, 0) * hessian.at<float>(1, 1) - hessian.at<float>(0, 1) * hessian.at<float>(1, 0);
+            double ratio = trH * trH / detH;
             if (detH < 0 || ratio > 10) return ret;
-            ret.pt.x = j*pow(2, index);
-            ret.pt.y = i*pow(2, index);
+            ret.pt.x = j * pow(2, index);
+            ret.pt.y = i * pow(2, index);
             ret.size = layer;
             return ret;
         }
         i -= int(round(extreme_loc.at<float>(1)));
-		j -= int(round(extreme_loc.at<float>(0)));
-		layer -= int(round(extreme_loc.at<float>(2)));
+        j -= int(round(extreme_loc.at<float>(0)));
+        layer -= int(round(extreme_loc.at<float>(2)));
         if (i < 5 || i > mid.size().height - 5 || j < 5 || j > mid.size().width - 5 || layer < 1 || layer >= octave.size() - 1) return ret;
         if (int(round(extreme_loc.at<float>(2)))) change = 1;
     }
@@ -253,59 +255,60 @@ keypoint localize(int i, int j, vector<Mat> octave, int layer, int index) {
 }
 
 vector<float> orientation(Point P, int octave, double sigma, Mat org) {
-		vector<float> orien;
-		Mat kernel = gaussian_kernel(sigma);
-        
-		int radius = int(2 * ceil(sigma) + 1);
-		double weight;
-		Mat histogram = Mat::zeros(36, 1, CV_64FC1); 
-		for (int i = -radius; i <= radius; i++) {
-			int y = int(round((P.y / pow(2, octave)))) + i;
-			if (y <= 0 || y >= org.rows - 1) continue;
-			
-            for (int j = -radius; j <= radius; j++) {
-				int x = int(round((P.x / pow(2, octave)))) + j;
-				if (x <= 0 || x >= org.cols - 1) continue;
+    vector<float> orien;
+    Mat kernel = gaussian_kernel(sigma);
 
-				double dx = org.at<float>(y, x + 1) - org.at<float>(y, x - 1);
-				double dy = org.at<float>(y + 1, x) - org.at<float>(y - 1, x);
-				double magnitude = sqrt(dx * dx + dy * dy);
-				double orientation = atan2(dy, dx)  * (180.0 / M_PI);
-                
-				if (orientation < 0) orientation += 360;
-                int hist_index = int(floor(orientation * 36.0 / 360.0));
-				weight = kernel.at<double>(j + radius, i + radius) * magnitude;
-				histogram.at<double>(hist_index, 0) += weight;
-			}
-		}
+    int radius = int(2 * ceil(sigma) + 1);
+    double weight;
+    Mat histogram = Mat::zeros(36, 1, CV_64FC1);
+    for (int i = -radius; i <= radius; i++) {
+        int y = int(round((P.y / pow(2, octave)))) + i;
+        if (y <= 0 || y >= org.rows - 1) continue;
 
-		double max;
-		Point maxLoc;
-		double left_value, right_value, orientation, interpolated_index;
-		minMaxLoc(histogram, NULL, &max, NULL, &maxLoc);
-		for (int bin = 0; bin < histogram.rows; bin++)
-		{
-			if (histogram.at<double>(bin, 0) >= (0.8 * max))
-			{
-				if (bin == 0) left_value = histogram.at<double>(35, 0);
-				else left_value = histogram.at<double>(bin - 1, 0);
+        for (int j = -radius; j <= radius; j++) {
+            int x = int(round((P.x / pow(2, octave)))) + j;
+            if (x <= 0 || x >= org.cols - 1) continue;
 
-				if (bin == 35) right_value = histogram.at<double>(0, 0);
-				else right_value = histogram.at<double>(bin + 1, 0);
+            double dx = org.at<float>(y, x + 1) - org.at<float>(y, x - 1);
+            double dy = org.at<float>(y + 1, x) - org.at<float>(y - 1, x);
+            double magnitude = sqrt(dx * dx + dy * dy);
+            double orientation = atan2(dy, dx) * (180.0 / M_PI);
 
-				interpolated_index = bin + 0.5 * (left_value - right_value) / (left_value - 2 * histogram.at<double>(bin, 0) + right_value);
-				orientation = interpolated_index * 360.0 / 36.0;
-				if (orientation < 0 || orientation >= 360) orientation = abs(360 - abs(orientation));
-				orien.push_back(orientation);
-			}
-		}
-		return orien;
-	}
+            if (orientation < 0) orientation += 360;
+            int hist_index = int(floor(orientation * 36.0 / 360.0));
+            weight = kernel.at<double>(j + radius, i + radius) * magnitude;
+            histogram.at<double>(hist_index, 0) += weight;
+        }
+    }
+
+    double max;
+    Point maxLoc;
+    double left_value, right_value, orientation, interpolated_index;
+    minMaxLoc(histogram, NULL, &max, NULL, &maxLoc);
+    for (int bin = 0; bin < histogram.rows; bin++)
+    {
+        if (histogram.at<double>(bin, 0) >= (0.8 * max))
+        {
+            if (bin == 0) left_value = histogram.at<double>(35, 0);
+            else left_value = histogram.at<double>(bin - 1, 0);
+
+            if (bin == 35) right_value = histogram.at<double>(0, 0);
+            else right_value = histogram.at<double>(bin + 1, 0);
+
+            interpolated_index = bin + 0.5 * (left_value - right_value) / (left_value - 2 * histogram.at<double>(bin, 0) + right_value);
+            orientation = interpolated_index * 360.0 / 36.0;
+            if (orientation < 0 || orientation >= 360) orientation = abs(360 - abs(orientation));
+            orien.push_back(orientation);
+        }
+    }
+    return orien;
+}
 
 bool compareKey(KeyPoint k1, KeyPoint k2) {
     if (k1.pt.x != k2.pt.x) {
-        return (k1.pt.x < k2.pt.x); 
-    } else {
+        return (k1.pt.x < k2.pt.x);
+    }
+    else {
         return (k1.pt.y < k2.pt.y);
     }
 }
@@ -315,7 +318,7 @@ vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     if (keypoints.size() <= 2) return keypoints;
     sort(keypoints.begin(), keypoints.end(), compareKey);
     unique_key.push_back(keypoints[0]);
-    for (KeyPoint key: keypoints) {
+    for (KeyPoint key : keypoints) {
         if (unique_key.back().pt.x != key.pt.x || unique_key.back().pt.y != key.pt.y || unique_key.back().angle != key.angle) unique_key.push_back(key);
     }
     keypoints.clear();
@@ -330,22 +333,22 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
             int end_w = dog_scale[octave][0].size().width - 5;
             int end_h = dog_scale[octave][0].size().height - 5;
             int cnt = 0;
-            cout << "looking at layer " << layer << endl; 
+            cout << "looking at layer " << layer << endl;
             for (int i = 5; i < end_h; i++) {
                 for (int j = 5; j < end_w; j++) {
                     keypoint current;
                     current.size = 0;
-                    Mat mid = dog_scale[octave][layer](Rect(j - 1, i - 1, 3, 3)).clone(); 
-                    Mat prevMat = dog_scale[octave][layer-1](Rect(j - 1, i - 1, 3, 3)).clone();
-                    Mat nextMat = dog_scale[octave][layer+1](Rect(j - 1, i - 1, 3, 3)).clone();
+                    Mat mid = dog_scale[octave][layer](Rect(j - 1, i - 1, 3, 3)).clone();
+                    Mat prevMat = dog_scale[octave][layer - 1](Rect(j - 1, i - 1, 3, 3)).clone();
+                    Mat nextMat = dog_scale[octave][layer + 1](Rect(j - 1, i - 1, 3, 3)).clone();
                     if (extrema(mid, prevMat, nextMat)) {
                         cnt++;
                         current = localize(i, j, dog_scale[octave], layer, octave);
                     }
                     if (current.size) {
-                        vector<float> orientations = orientation(current.pt, octave, layer*1.5, scale_space[octave][current.size]);
-                        for (float angle: orientations)
-                        {                          
+                        vector<float> orientations = orientation(current.pt, octave, layer * 1.5, scale_space[octave][current.size]);
+                        for (float angle : orientations)
+                        {
                             KeyPoint tmp(current.pt, current.size, angle, 0, octave);
                             // cout << "x: " << tmp.pt.x << ", y: " << tmp.pt.y << " with size " << tmp.size << ", angle of " << tmp.angle << " at octave " << tmp.octave << endl;
                             list.push_back(tmp);
@@ -357,18 +360,18 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
             printf("have %d keypoints at layer %d\n", cnt, layer);
         }
     }
-    return unique(list);        
+    return unique(list);
 }
 
 vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
-    Mat kernel = gaussian_kernel(16/6.0);
+    Mat kernel = gaussian_kernel(16 / 6.0);
     int pad = 8;
     vector<Mat> feature;
     Mat feature_vec = Mat::zeros(128, 1, CV_64FC1);
     for (KeyPoint p : key) {
         Mat current = scale_space[p.octave][p.size];
-        int x = (int) p.pt.x / pow(2, p.octave);
-        int y = (int) p.pt.y / pow(2, p.octave);
+        int x = (int)p.pt.x / pow(2, p.octave);
+        int y = (int)p.pt.y / pow(2, p.octave);
 
         Mat magnitude = Mat::zeros(17, 17, CV_64FC1);
         Mat orien = Mat::zeros(17, 17, CV_64FC1);
@@ -388,17 +391,17 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
             }
         }
         Mat weighted_grad = magnitude.mul(kernel);
-        for (int i = 0; i <= 13 ; i = i+4)
+        for (int i = 0; i <= 13; i = i + 4)
         {
             int m = 0;
-            for (int j = 0; j <= 13; j = j+4)
+            for (int j = 0; j <= 13; j = j + 4)
             {
                 Mat tmp = orien(Rect(i, j, 4, 4));
                 for (int a = 0; a < tmp.rows; a++)
                 {
                     for (int b = 0; b < tmp.cols; b++)
                     {
-                        int value = floor(tmp.at<float>(a, b)/45.0);
+                        int value = floor(tmp.at<float>(a, b) / 45.0);
                         feature_vec.at<float>(m + value) += 1.0;
                     }
                 }
@@ -408,7 +411,7 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
             if (i == 4) i += 1;
         }
         feature_vec = feature_vec / max(1e-6, norm(feature_vec, NORM_L2));
-        threshold(feature_vec, feature_vec, 0.2, 255,THRESH_TRUNC);
+        threshold(feature_vec, feature_vec, 0.2, 255, THRESH_TRUNC);
         feature_vec = feature_vec / max(1e-6, norm(feature_vec, NORM_L2));
         feature.push_back(feature_vec);
     }
@@ -446,28 +449,4 @@ tuple<vector<KeyPoint>, vector<Mat>> get_key_pts(Mat img) {
     for (int i = 0; i < des.rows; i++)
         descriptors.push_back(des.row(i));
     return make_tuple(keypoints, descriptors);
-}
-
-int main(int argc, char **argv)
-{
-    Mat image_left, image_right;
-    image_left = imread("left.bmp");
-    image_right = imread("right.bmp");
-    tuple<vector<KeyPoint>, vector<Mat>> descriptor_left = get_key_pts(image_left);
-    tuple<vector<KeyPoint>, vector<Mat>> descriptor_right = get_key_pts(image_right);
-    
-    // BFMatcher matcher(NORM_L2);
-    // std::vector<DMatch> matches;
-    // matcher.match(get<1>(descriptor_left), get<1>(descriptor_right), matches);
-    // Mat img_matches;
-    // drawMatches(image_left, get<0>(descriptor_left), image_right, get<0>(descriptor_right),
-    //            matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-    //            vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-
-    // imshow( "Good Matches", img_matches );
-
-    // waitKey(0);
-    // return 0;
-    // for (Mat m: get<1>(descriptor)) cout << m << endl;
-    return 0;
 }

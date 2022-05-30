@@ -14,6 +14,7 @@
 #include <string>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+#include<opencv2/opencv.hpp>
 #include "main.h"
 
 using namespace std;
@@ -53,8 +54,11 @@ void print_depth_map(int** depth_map){
             depth_map_img.at<Vec3b>(i, j) = depth_to_color(depth_map[i][j]);
         }
     }
+    imwrite(folder_path + "optimized_map.png", depth_map_img);
+    Mat resized_img;
+    resize(depth_map_img, resized_img, Size(0.7 * width, 0.7 * height));
 
-    imshow("Depth map", depth_map_img);                         //Show depth map image
+    imshow("Depth map", resized_img);                         //Show depth map image
     waitKey(0);
 
 }

@@ -22,7 +22,7 @@ using namespace cv;
 
 int main()
 {
-    folder_path = "D:/Download/Project images 1/";
+    folder_path = "D:/Download/Project images 3/";
     string calib_path = folder_path + "calib.txt";     //Path to calibration file
     ifstream calib_file(calib_path);
 
@@ -62,7 +62,7 @@ int main()
         vector<KeyPoint> right_key_pts = get<0>(right_tup);
 
         vector<Mat> left_descriptors = get<1>(left_tup);
-        cout << left_descriptors[0];
+        cout << format(left_descriptors[0], Formatter::FMT_NUMPY) << endl << endl;
         vector<Mat> right_descriptors = get<1>(right_tup);
 
         cout << "Finish finding key points\n";
@@ -71,13 +71,13 @@ int main()
 
         ofstream pair_file(pair_path);
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             pair_file << (int)left_pts[i].x << " ";
             pair_file << (int)left_pts[i].y << " ";
         }
         pair_file << "\n";
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             pair_file << (int)right_pts[i].x << " ";
             pair_file << (int)right_pts[i].y << " ";
         }
@@ -88,13 +88,13 @@ int main()
         ifstream pair_file(pair_path);
         int x = 0;
         int y = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             pair_file >> x;
             pair_file >> y;
             left_pts[i] = Point(x, y);
         }
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             pair_file >> x;
             pair_file >> y;
             right_pts[i] = Point(x, y);
@@ -102,7 +102,15 @@ int main()
 
         pair_file.close();
     }
-    return 0;
+
+    Mat fund = fundamental(left_pts, right_pts);
+    cout << fund << endl;
+
+    tuple<Mat, Mat> rectified_tup = rectify(left_img, right_img, fund);
+    imshow("rectified left", get<0>(rectified_tup));
+    waitKey(0);
+    imshow("rectified right", get<1>(rectified_tup));
+    waitKey(0);
 
     int** depth_map = (int**)malloc(height * sizeof(int*));     
     int* temp_ptr;

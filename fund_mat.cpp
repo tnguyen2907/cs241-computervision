@@ -19,44 +19,45 @@ using namespace std;
 Mat lhs_mat(Point arr1[9], Point arr2[9]) {
     Mat lhs = Mat::zeros(9, 9, CV_64FC1);
     for (int i = 0; i < 9; i++) {
-        lhs.at<double>(i, 0) += ((int) arr1[i].x) * ((int) arr2[i].x);
-        lhs.at<double>(i, 1) += ((int) arr1[i].x) * ((int) arr2[i].y);
-        lhs.at<double>(i, 2) += (int) arr1[i].x;
-        lhs.at<double>(i, 3) += ((int) arr1[i].y) * ((int) arr2[i].x);
-        lhs.at<double>(i, 4) += ((int) arr1[i].y) * ((int) arr2[i].y);
-        lhs.at<double>(i, 5) += (int) arr1[i].y;
-        lhs.at<double>(i, 6) += (int) arr2[i].x;
-        lhs.at<double>(i, 7) += (int) arr2[i].y;
+        lhs.at<double>(i, 0) += ((int)arr1[i].x) * ((int)arr2[i].x);
+        lhs.at<double>(i, 1) += ((int)arr1[i].x) * ((int)arr2[i].y);
+        lhs.at<double>(i, 2) += (int)arr1[i].x;
+        lhs.at<double>(i, 3) += ((int)arr1[i].y) * ((int)arr2[i].x);
+        lhs.at<double>(i, 4) += ((int)arr1[i].y) * ((int)arr2[i].y);
+        lhs.at<double>(i, 5) += (int)arr1[i].y;
+        lhs.at<double>(i, 6) += (int)arr2[i].x;
+        lhs.at<double>(i, 7) += (int)arr2[i].y;
         lhs.at<double>(i, 8) += 1;
     }
     return lhs;
 }
 
 
-Mat fundamental(Mat lhs) {
-    Mat sub_fund = Mat::zeros(9 , 1, CV_64FC1);
+Mat fundamental(Point arr1[9], Point arr2[9]) {
+    Mat lhs = lhs_mat(arr1, arr2);
+    Mat sub_fund = Mat::zeros(9, 1, CV_64FC1);
     SVD::solveZ(lhs, sub_fund);
-    Mat fund = Mat:: zeros(3, 3, CV_64FC1)
-    fund.at<double>(0,0) += sub_fund.at<double>(0,0);
-    fund.at<double>(0,1) += sub_fund.at<double>(1,0);
-    fund.at<double>(0,2) += sub_fund.at<double>(2,0);
-    fund.at<double>(1,0) += sub_fund.at<double>(3,0);
-    fund.at<double>(1,1) += sub_fund.at<double>(4,0);
-    fund.at<double>(1,2) += sub_fund.at<double>(5,0);
-    fund.at<double>(2,0) += sub_fund.at<double>(6,0);
-    fund.at<double>(2,1) += sub_fund.at<double>(7,0);
-    fund.at<double>(2,2) += sub_fund.at<double>(8,0);
+    Mat fund = Mat::zeros(3, 3, CV_64FC1);
+        fund.at<double>(0, 0) += sub_fund.at<double>(0, 0);
+    fund.at<double>(0, 1) += sub_fund.at<double>(1, 0);
+    fund.at<double>(0, 2) += sub_fund.at<double>(2, 0);
+    fund.at<double>(1, 0) += sub_fund.at<double>(3, 0);
+    fund.at<double>(1, 1) += sub_fund.at<double>(4, 0);
+    fund.at<double>(1, 2) += sub_fund.at<double>(5, 0);
+    fund.at<double>(2, 0) += sub_fund.at<double>(6, 0);
+    fund.at<double>(2, 1) += sub_fund.at<double>(7, 0);
+    fund.at<double>(2, 2) += sub_fund.at<double>(8, 0);
     return fund;
 }
 
-int main(int argc, char **argv)
-{
-    Point key1[9] = {Point(0, 0) , Point(1, 6), Point(8, 4), 
-                    Point(6, 27), Point(13, 9), Point(5, 2), 
-                    Point(72, 86), Point(5, 94), Point(56, 23)};
-    Point key2[9] = {Point(10, 0) , Point(2, 4), Point(17, 3), 
-                    Point(16, 25), Point(12, 37), Point(3, 8), 
-                    Point(46, 81), Point(7, 100), Point(43, 19)};
-    Mat fund = fundamental(lhs_mat(key1, key2));
-    return 0;
-}
+//int main(int argc, char** argv)
+//{
+//    Point key1[9] = { Point(0, 0) , Point(1, 6), Point(8, 4),
+//                    Point(6, 27), Point(13, 9), Point(5, 2),
+//                    Point(72, 86), Point(5, 94), Point(56, 23) };
+//    Point key2[9] = { Point(10, 0) , Point(2, 4), Point(17, 3),
+//                    Point(16, 25), Point(12, 37), Point(3, 8),
+//                    Point(46, 81), Point(7, 100), Point(43, 19) };
+//    Mat fund = fundamental(lhs_mat(key1, key2));
+//    return 0;
+//}
