@@ -68,16 +68,22 @@ int main(int argc, char** argv)
 // Estimate the fundamental matrix including normalize the points
 void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
 {
+    // Create 2 vectors for normalization
     vector<Vec2f> nx1, nx2;
+    // Create 2 matrix 3x3
     Mat3f T1, T2;
+    // Normalize the points x1, x2
     T1 = normalize_pts(x1, nx1);
     T2 = normalize_pts(x2, nx2);
 
+    // Create 2 matrix
     Mat matx1, matx2;
+    // Change the dimension of the matrix
     vector2mat<float>(nx1, matx1);
     vector2mat<float>(nx2, matx2);
 
-    Matf A(9, x1.size());
+    // Add numbers for matrix A
+    Mat A(9, x1.size());
     A << matx2.row(0).array() * matx1.row(0).array(),
         matx2.row(0).array()* matx1.row(1).array(),
         matx2.row(0).array(),
@@ -89,6 +95,9 @@ void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
         Matf::Ones(1, x1.size());
     A = A.transpose().eval();
 
+    // Solve the constraint equation for F from nullspace extraction
+    // An LU decomposition is efficient for the minimally constrained case
+    // Otherwise, use an SVD
     Vec9f fvector;
     if (0)
     {
@@ -98,16 +107,21 @@ void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
             fvector = lu_decomp.kernel();
         }
     }
+    
     else
     {
         JacobiSVD<Eigen::Matrix<float, Eigen::Dynamic, 9> > amatrix_svd(A, Eigen::ComputeFullV);
         fvector = amatrix_svd.matrixV().col(8);
     }
-
+    
+    // Rearrange the vectors to forms the matrix
     F << fvector(0), fvector(1), fvector(2),
         fvector(3), fvector(4), fvector(5),
         fvector(6), fvector(7), fvector(8);
 
+    // enforce the constraint that F is of rank 2
+    // Find the closest singular matrix to F under frobenius norm
+    // We can compute this matrix with SVD
     JacobiSVD<Mat3f> fmatrix_svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
     Vec3f singular_values = fmatrix_svd.singularValues();
     singular_values(2) = 0.0f;
