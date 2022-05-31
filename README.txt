@@ -1,31 +1,29 @@
-﻿Deadline: Wednesday (5/11)
+Trung Nguyen & Brian Do & Nam Anh Nguyen & Dat Le
+05/30/2022
+Stereo Reconstruction Project - CS 241
 
-Look at data set
+To run, in first part of main.cpp
+	- Set calib_path to the path of calibration file. 
+      Calibration file has to have at least 2 lines:
+      ________
+      vmin=0;
+      vmax=100;
+      ________
+      vmin is the min disparity (default can be 0)
+      vmax is the max disparity (default can be 100)
+      This is for visualization of the depth map. You can change the value of vmax to find the best visualization
+      Our data already has calibration file calib.txt
 
-Read in images using CImage: Trung
+    - Set left_img_path to the path of the left image
 
-Pick special points (corners) using algorithm like SIFT: Nam Anh
+    - Set right_img_path to the path of the right image
 
-Input type:
-
-Match two corresponding points: Dũng và Đạt
-
-Input type:
-
-Use formula calculate depth and coordinates: Dũng và Đạt
-
-Print out stereo images: Trung
-
-Input type: 2d int array of size height * width. Every element in this array is the depth of the pixel at that position.
+    - Set depth_map_path to the path of a text file that you want to save the depth map
 
 
 
-Người đằng trước phải biến output của mình thành dạng input của người đằng sau
-Người đằng sau nhớ ghi dạng input của mình
-
-Dũng đã ở đây là nhận công việc
-Đm ae t xong rồi nhá
-\
-https://docs.google.com/document/d/1BRb3IxyIHWtJ8SQ1qp8vmqiLGHNJOX3bftux6dBil5c/edit?usp=sharing
-
-http://www.cs.cmu.edu/~16385/s17/Slides/12.4_8Point_Algorithm.pdf
+We try to rectify our images, but it didn't work as we expected so we comment out the part that rectify images. That part has 3 section
+    - First part is Finding key points and match key points
+    - Second part is Find fundamental matrix
+    - Third part is Rotate the image
+Comment each part to see the result of that part

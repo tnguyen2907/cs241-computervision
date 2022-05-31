@@ -42,7 +42,7 @@ int get_red(int n) {
     else return 0;
 }
 
-Vec3b depth_to_color(int depth) {       //Map depth to a color in my custom spectrum
+Vec3b depth_to_color(int depth) {       //Map depth to a color in spectrum
     return Vec3b(get_blue(depth), get_green(depth), get_red(depth));
 }
 
@@ -54,9 +54,11 @@ void print_depth_map(int** depth_map){
             depth_map_img.at<Vec3b>(i, j) = depth_to_color(depth_map[i][j]);
         }
     }
-    imwrite(folder_path + "optimized_map.png", depth_map_img);
+    //If want to save depth map, uncomment this
+    //imwrite(folder_path + "optimized_map.png", depth_map_img);
+
     Mat resized_img;
-    resize(depth_map_img, resized_img, Size(0.7 * width, 0.7 * height));
+    resize(depth_map_img, resized_img, Size(0.7 * width, 0.7 * height));    //resize to fit 
 
     imshow("Depth map", resized_img);                         //Show depth map image
     waitKey(0);

@@ -432,26 +432,6 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
     return feature;
 }
 
-// tuple<vector<KeyPoint>, Mat> get_key_pts(Mat img) {
-//     Mat ret, tmp;
-//     Mat output;
-//     cvtColor(img, tmp, COLOR_BGR2GRAY);
-//     tmp.convertTo(ret, CV_32FC1);
-//     GaussianBlur(ret, ret, Size(0, 0), 0.5, 0.5);
-// 	resize(ret, ret, Size(0, 0), 2, 2, INTER_LINEAR);
-// 	tuple<vector<vector<Mat>>, vector<vector<Mat>>> Scale_DoG = dog(ret, 1.6);
-// 	vector<KeyPoint> keypoints = get_keypoint(get<0>(Scale_DoG), get<1>(Scale_DoG));
-//     get<0>(Scale_DoG).clear();
-//     get<1>(Scale_DoG).clear();
-//     Ptr<SiftFeatureDetector> detector = SiftFeatureDetector::create();
-//     detector->compute(tmp, keypoints, output);
-//     cout << output.size() << endl;
-//     imshow("descriptor", output);
-//     waitKey(0);
-//     return make_tuple(keypoints, output);
-// }
-
-// function to get key points and descriptors
 tuple<vector<KeyPoint>, vector<Mat>> get_key_pts(Mat img) {
     Mat output;
     cvtColor(img, output, COLOR_BGR2GRAY);

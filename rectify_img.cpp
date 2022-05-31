@@ -1,4 +1,3 @@
-
 #define _USE_MATH_DEFINES
 
 #include <stdio.h>
@@ -19,7 +18,7 @@ using namespace std;
 
 // Using the fundamental matrix and a point in the left image to find a line of the form ax + by + c = 0
 // in the right image which contains the corresponding point to that point
-Vec3f create_line_right(Mat fund, Point point) { 
+Vec3f create_line_right(Mat fund, Point point) {
     float a = (((int)point.x) * fund.at<double>(0, 0)) + (((int)point.y) * fund.at<double>(1, 0)) + fund.at<double>(2, 0);
     float b = (((int)point.x) * fund.at<double>(0, 1)) + (((int)point.y) * fund.at<double>(1, 1)) + fund.at<double>(2, 1);
     float c = (((int)point.x) * fund.at<double>(0, 2)) + (((int)point.y) * fund.at<double>(1, 2)) + fund.at<double>(2, 2);
@@ -71,10 +70,10 @@ tuple<Mat, Mat> rectify(Mat img1, Mat img2, Mat fund) {
     int lp3_y = floor(-((left_line[2] + (left_line[0] * lp3_x)) / left_line[1]));
     Point lpoint3(lp3_x, lp3_y);                                // pick the third point in the left image
     Mat left_rot;                                               // create the rotation matrix for the left image
-    if (lp3_x > lp2_x) left_rot = rot_mat(find_theta(lpoint2, lpoint3));   
+    if (lp3_x > lp2_x) left_rot = rot_mat(find_theta(lpoint2, lpoint3));
     else left_rot = rot_mat(find_theta(lpoint3, lpoint2));
 
-    
+
     Mat new_img1(img1.rows, img1.cols, CV_8UC3, Vec3b(0, 0, 0)); // create a new left image with rotated points
     for (int i = 0; i < img1.rows; i++) {
         for (int j = 0; j < img1.cols; j++) {
@@ -100,4 +99,3 @@ tuple<Mat, Mat> rectify(Mat img1, Mat img2, Mat fund) {
 
     return make_tuple(new_img1, new_img2);
 }
-

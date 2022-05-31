@@ -7,8 +7,6 @@ using namespace std;
 using namespace cv;
 
 double get_ssd(Mat m1, Mat m2) {		//Sum of square difference
-	//cout << format(m1, Formatter::FMT_NUMPY) << endl << endl;
-	//cout << format(m2, Formatter::FMT_NUMPY) << endl << endl;
 	double sum = 0;
 	for (int i = 0; i < 128; i++) {
 		sum += pow(m1.at<float>(0, 0) - m2.at<float>(0, 0), 2);
@@ -28,7 +26,9 @@ void match(vector<KeyPoint> left_key_pts, vector<KeyPoint> right_key_pts, Point 
 
 void match_key_pts(vector<Mat> left_descriptors, vector<Mat> right_descriptors, vector <KeyPoint> left_key_pts, vector<KeyPoint> right_key_pts, Point left_pts[9], Point right_pts[9]) {
 	int left_index[9];
+	for (int i = 0; i < 9; i++) left_index[i] = 0;
 	int right_index[9];
+	for (int i = 0; i < 9; i++) right_index[i] = 0;
 
 	double ssd_lst[9];
 
@@ -36,8 +36,13 @@ void match_key_pts(vector<Mat> left_descriptors, vector<Mat> right_descriptors, 
 	for (int i = 0; i < left_descriptors.size(); i++) {
 		cout << i << endl;
 		int min_index = 0;
-		double min_ssd = 0;
+		double min_ssd = get_ssd(left_descriptors[i], right_descriptors[0]);
 		for (int j = 0; j < right_descriptors.size(); j++) {
+			bool con = false;
+			for (int k = 0; k < n; k++) {
+				if (right_index[k] == j) con = true;
+			}
+			if (con) continue;
 			double cur_ssd = get_ssd(left_descriptors[i], right_descriptors[j]);
 			if (cur_ssd < min_ssd) {
 				min_ssd = cur_ssd;
