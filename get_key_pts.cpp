@@ -86,10 +86,12 @@ void addPadding(Mat org, Mat ret, int padding) {
     }
 }
 
+// calculate how many octave an image will have
 int wave_num(Size image_shape) {
     return int(round(log(min(image_shape.height, image_shape.width)) / log(2) - 1));
 }
 
+// generate sigmas for every octave
 vector<double> octave_sigmas(double sigma) {
     vector<double> sigmas;
     double scale = pow(2, 1.0 / 3.0);
@@ -121,6 +123,7 @@ void halfimg(Mat org, Mat ret) {
     }
 }
 
+// double the size of the image
 void doubleimg(Mat org, Mat ret) {
     int org_width = org.size().width;
     int org_height = org.size().height;
@@ -140,6 +143,7 @@ void doubleimg(Mat org, Mat ret) {
     }
 }
 
+// calculate the gradient based on 3 matrix 3x3
 Mat compute_gradient(Mat mid, Mat next, Mat prev) {
     double dx = 0.5 * (mid.at<float>(1, 2) - mid.at<float>(1, 0));
     double dy = 0.5 * (mid.at<float>(2, 1) - mid.at<float>(0, 1));
@@ -148,6 +152,7 @@ Mat compute_gradient(Mat mid, Mat next, Mat prev) {
     return gradient;
 }
 
+// calculate the hessian matrix based on 3 matrix 3x3
 Mat compute_hessian(Mat mid, Mat next, Mat prev) {
     double dxx, dyy, dzz, dxy, dxz, dyz;
     dxx = mid.at<float>(1, 2) - 2 * mid.at<float>(1, 1) + mid.at<float>(1, 0);
@@ -160,6 +165,7 @@ Mat compute_hessian(Mat mid, Mat next, Mat prev) {
     return hessian;
 }
 
+// generate the kernel for a sigma
 Mat gaussian_kernel(double sigma) {
     int r = (int)ceil(3 * sigma);
     Mat kernel(2 * r + 1, 2 * r + 1, CV_64FC1);
@@ -174,6 +180,7 @@ Mat gaussian_kernel(double sigma) {
     return kernel;
 }
 
+///generate a list of scale space and a list of Difference of Gaussian
 tuple<vector<vector<Mat>>, vector<vector<Mat>>> dog(Mat org, double sigma) {
     int waves = wave_num(org.size());
     vector<double> sigmas = octave_sigmas(sigma);
@@ -196,6 +203,7 @@ tuple<vector<vector<Mat>>, vector<vector<Mat>>> dog(Mat org, double sigma) {
     return make_tuple(scale_space, dog);
 }
 
+// check if a pixel is an extrema in 3 difference matrix 3x3
 bool extrema(Mat mid, Mat prevMat, Mat nextMat) {
     if (mid.at<float>(1, 1) < 0.03) return false;
     double min, max;
@@ -212,6 +220,7 @@ bool extrema(Mat mid, Mat prevMat, Mat nextMat) {
     return true;
 }
 
+// localize the point of the scale space to the original image
 keypoint localize(int i, int j, vector<Mat> octave, int layer, int index) {
     keypoint ret;
     ret.pt = Point2f(-1, -1);
@@ -254,6 +263,7 @@ keypoint localize(int i, int j, vector<Mat> octave, int layer, int index) {
     return ret;
 }
 
+// compute the orientation of each key point
 vector<float> orientation(Point P, int octave, double sigma, Mat org) {
     vector<float> orien;
     Mat kernel = gaussian_kernel(sigma);
@@ -304,6 +314,7 @@ vector<float> orientation(Point P, int octave, double sigma, Mat org) {
     return orien;
 }
 
+// function to sort the key point
 bool compareKey(KeyPoint k1, KeyPoint k2) {
     if (k1.pt.x != k2.pt.x) {
         return (k1.pt.x < k2.pt.x);
@@ -313,6 +324,7 @@ bool compareKey(KeyPoint k1, KeyPoint k2) {
     }
 }
 
+// remove duplicate keypoint
 vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     vector<KeyPoint> unique_key;
     if (keypoints.size() <= 2) return keypoints;
@@ -325,6 +337,7 @@ vector<KeyPoint> unique(vector<KeyPoint> keypoints) {
     return unique_key;
 }
 
+// get key point from the Difference of Gaussian list
 vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat>> dog_scale) {
     vector<KeyPoint> list;
     for (int octave = 0; octave < dog_scale.size(); octave++) {
@@ -363,6 +376,7 @@ vector<KeyPoint> get_keypoint(vector<vector<Mat>> scale_space, vector<vector<Mat
     return unique(list);
 }
 
+// get descriptors from each keypoint
 vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
     Mat kernel = gaussian_kernel(16 / 6.0);
     int pad = 8;
@@ -437,6 +451,7 @@ vector<Mat> descriptor(vector<KeyPoint> key, vector<vector<Mat>> scale_space) {
 //     return make_tuple(keypoints, output);
 // }
 
+// function to get key points and descriptors
 tuple<vector<KeyPoint>, vector<Mat>> get_key_pts(Mat img) {
     Mat output;
     cvtColor(img, output, COLOR_BGR2GRAY);
