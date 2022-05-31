@@ -65,6 +65,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
+// Estimate the fundamental matrix including normalize the points
 void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
 {
     vector<Vec2f> nx1, nx2;
@@ -89,7 +90,7 @@ void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
     A = A.transpose().eval();
 
     Vec9f fvector;
-    if (0) // x1.size() == 8
+    if (0)
     {
         const auto lu_decomp = A.fullPivLu();
         if (lu_decomp.dimensionOfKernel() == 1)
@@ -115,6 +116,7 @@ void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
     F = T2.transpose() * F * T1;
 }
 
+// Normalize the points
 Mat3f normalize_pts(vector<Vec2f>& pts, vector<Vec2f>& newpts)
 {
     newpts.resize(pts.size());
