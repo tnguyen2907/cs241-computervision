@@ -92,13 +92,13 @@ void fund_eight_pts(vector<Vec2f>& x1, vector<Vec2f>& x2, Mat3f& F)
         matx2.row(1).array(),
         matx1.row(0),
         matx1.row(1),
-        Matf::Ones(1, x1.size());
+        Mat::Ones(1, x1.size());
     A = A.transpose().eval();
 
     // Solve the constraint equation for F from nullspace extraction
     // An LU decomposition is efficient for the minimally constrained case
     // Otherwise, use an SVD
-    Vec9f fvector;
+    vector<Vec9f> fvector;
     if (0)
     {
         const auto lu_decomp = A.fullPivLu();
