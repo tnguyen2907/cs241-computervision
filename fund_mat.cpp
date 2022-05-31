@@ -16,6 +16,10 @@
 using namespace cv;
 using namespace std;
 
+// Find the fundamental matrix F using the formula A.F = 0, 
+// where A is a 9x9 matrix created by using the location of matched points from 2 images
+
+// Create the matrix A in the equation from matched points
 Mat lhs_mat(Point arr1[9], Point arr2[9]) {
     Mat lhs = Mat::zeros(9, 9, CV_64FC1);
     for (int i = 0; i < 9; i++) {
@@ -32,13 +36,13 @@ Mat lhs_mat(Point arr1[9], Point arr2[9]) {
     return lhs;
 }
 
-
+// Create the fundamental matrix using the equation and rearrange the entries
 Mat fundamental(Point arr1[9], Point arr2[9]) {
     Mat lhs = lhs_mat(arr1, arr2);
     Mat sub_fund = Mat::zeros(9, 1, CV_64FC1);
-    SVD::solveZ(lhs, sub_fund);
-    Mat fund = Mat::zeros(3, 3, CV_64FC1);
-        fund.at<double>(0, 0) += sub_fund.at<double>(0, 0);
+    SVD::solveZ(lhs, sub_fund);             // solve for the 9x1 matrix which contains entries of the 3x3 fundamental matrix
+    Mat fund = Mat::zeros(3, 3, CV_64FC1);  // rearrange entries of the fundamental matrix
+    fund.at<double>(0, 0) += sub_fund.at<double>(0, 0);
     fund.at<double>(0, 1) += sub_fund.at<double>(1, 0);
     fund.at<double>(0, 2) += sub_fund.at<double>(2, 0);
     fund.at<double>(1, 0) += sub_fund.at<double>(3, 0);
@@ -50,6 +54,7 @@ Mat fundamental(Point arr1[9], Point arr2[9]) {
     return fund;
 }
 
+// testing the fundamental matrix
 //int main(int argc, char** argv)
 //{
 //    Point key1[9] = { Point(0, 0) , Point(1, 6), Point(8, 4),
