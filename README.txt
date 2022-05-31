@@ -26,4 +26,4 @@ We try to rectify our images, but it didn't work as we expected so we comment ou
     - First part is Finding key points and match key points
     - Second part is Find fundamental matrix
     - Third part is Rotate the image
-Comment each part to see the result of that part
+Uncomment each part to see the result of that part
